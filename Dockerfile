@@ -1,4 +1,4 @@
-FROM node:6.14.2
+FROM node:14
 WORKDIR /CW02
 EXPOSE 8080
 COPY server.js .
