@@ -1,5 +1,5 @@
 FROM node:6.14.2
-WORKDIR /app
+WORKDIR /CW02
 EXPOSE 8080
 COPY server.js .
 CMD node server.js
