@@ -1,32 +1,34 @@
 node {
-    // Checkout code from Git
-    checkout scm
+    def dockerImageName = 'sstark300/cw02'
+    def dockerImageTag = '1.0'
 
-    // Build Docker image
+    stage('Preparation') {
+        // Get some code from a GitHub repository
+        git 'https://github.com/tiredpxl/CW02.git'
+    }
+
     stage('Build Docker Image') {
-        echo 'Building Docker image...'
-        docker.build('sstark/cw02:${BUILD_NUMBER}')
+        // Build Docker image
+        sh "docker build -t ${dockerImageName}:${dockerImageTag} ."
     }
 
-    // Test Container Launch
     stage('Test Container Launch') {
-        echo 'Testing container launch...'
-        docker.image("sstark/cw02:${BUILD_NUMBER}").inside {
-            sh 'echo "Container launched successfully"'
-        }
+        // Test that a Container can be launched from the Image
+        sh "docker run ${dockerImageName}:${dockerImageTag} echo 'Container launched successfully'"
     }
 
-    // Push to DockerHub
     stage('Push to DockerHub') {
-        echo 'Pushing Docker image to DockerHub...'
-        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-            docker.image("sstark/cw02:${BUILD_NUMBER}").push()
+        // Push Docker image to DockerHub
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+            sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+            sh "docker tag ${dockerImageName}:${dockerImageTag} ${dockerImageName}:${env.BUILD_NUMBER}"
+            sh "docker push ${dockerImageName}:${dockerImageTag}"
+            sh "docker push ${dockerImageName}:${env.BUILD_NUMBER}"
         }
     }
 
-    // Deploy to Kubernetes
     stage('Deploy to Kubernetes') {
-        echo 'Deploying to Kubernetes...'
+        // Deploy passed builds to Kubernetes
         sh 'kubectl apply -f kubernetes-deployment.yaml'
     }
 }
