@@ -30,9 +30,17 @@ node {
     }
 
     stage('Deploy to Kubernetes') {
-        // Deploy passed builds to Kubernetes
-        sh 'kubectl apply -f kubernetes-deployment.yaml'
+    // Use SSH private key for authentication
+    withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+        // Write the SSH private key to a temporary file
+        writeFile file: 'temp-ssh-key', text: env.SSH_PRIVATE_KEY
+        // Set proper permissions
+        sh 'chmod 600 temp-ssh-key'
+        // Deploy to Kubernetes using kubectl
+        sh 'kubectl apply -f kubernetes-deployment.yaml --private-key=temp-ssh-key'
     }
+}
+
 }
 
 }
