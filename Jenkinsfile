@@ -34,7 +34,7 @@ node {
     withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
 
         // Deploy to Kubernetes using kubectl
-        sh "ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21:8080 'kubectl apply -f kubernetes-deployment.yaml'"
+        sh "ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f kubernetes-deployment.yaml'"
         }
     }
 
