@@ -4,7 +4,9 @@ node {
 
     stage('Preparation') {
         // Get some code from a GitHub repository
-        git 'https://github.com/tiredpxl/CW02.git', credentialsId: GitHub
+        withCredentials([usernamePassword(credentialsId: 'GitHub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+        // your pipeline steps here
+        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github-credentials', url: 'https://github.com/tiredpxl/CW02.git']]])
     }
 
     stage('Build Docker Image') {
