@@ -32,9 +32,16 @@ node {
     stage('Deploy to Kubernetes') {
     // Use SSH private key for authentication
     withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+        // Define the Docker image tag
+        def dockerImageTag = '1.0'
+
         // Deploy to Kubernetes using kubectl
-        sh 'kubectl apply -f kubernetes-deployment.yaml --private-key=$SSH_PRIVATE_KEY'
+        sh """
+        ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f kubernetes-deployment.yaml'
+        """
     }
+}
+
 }
 
 }
