@@ -1,51 +1,33 @@
-pipeline {
-    agent any
+node {
+    // Checkout code from Git
+    checkout scm
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+    // Build Docker image
+    stage('Build Docker Image') {
+        echo 'Building Docker image...'
+        docker.build('sstark/cw02:${BUILD_NUMBER}')
+    }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build Docker image
-                    docker.build('sstark/cw02:${BUILD_NUMBER}')
-                }
-            }
-        }
-
-        stage('Test Container Launch') {
-            steps {
-                script {
-                    // Run a command inside the container to ensure it launches successfully
-                    docker.image("sstark/cw02:${BUILD_NUMBER}").inside {
-                        sh 'echo "Container launched successfully"'
-                    }
-                }
-            }
-        }
-
-        stage('Push to DockerHub') {
-            steps {
-                script {
-                    // Push Docker image to DockerHub
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                        docker.image("sstark/cw02:${BUILD_NUMBER}").push()
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Deploy to Kubernetes (replace with your kubectl and kubeconfig details)
-                    sh 'kubectl apply -f kubernetes-deployment.yaml'
-                }
-            }
+    // Test Container Launch
+    stage('Test Container Launch') {
+        echo 'Testing container launch...'
+        docker.image("sstark/cw02:${BUILD_NUMBER}").inside {
+            sh 'echo "Container launched successfully"'
         }
     }
+
+    // Push to DockerHub
+    stage('Push to DockerHub') {
+        echo 'Pushing Docker image to DockerHub...'
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            docker.image("sstark/cw02:${BUILD_NUMBER}").push()
+        }
+    }
+
+    // Deploy to Kubernetes
+    stage('Deploy to Kubernetes') {
+        echo 'Deploying to Kubernetes...'
+        sh 'kubectl apply -f kubernetes-deployment.yaml'
+    }
 }
+
