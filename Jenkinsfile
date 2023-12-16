@@ -4,7 +4,7 @@ node {
 
     stage('Preparation') {
         // Get some code from a GitHub repository
-        git 'https://github.com/tiredpxl/CW02.git'
+        git 'https://github.com/tiredpxl/CW02.git', credentialsId: GitHub
     }
 
     stage('Build Docker Image') {
