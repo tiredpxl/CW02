@@ -39,11 +39,7 @@ node {
         sh """
         ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f kubernetes-deployment.yaml'
         """
+        }
     }
-}
-
-}
-
-}
 
 }
