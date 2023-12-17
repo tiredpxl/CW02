@@ -35,7 +35,7 @@ node {
 
     stage('Push Image') {
         script {
-            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            docker.withRegistry('https://registry.hub.docker.com', 'sstark300-dockerhub') {
                 def imageTag = "${env.BUILD_NUMBER}"
                 app.push(imageTag)
                 echo "Docker image pushed to sstark300/cw02:${imageTag}"
