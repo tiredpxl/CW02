@@ -37,7 +37,8 @@ pipeline {
             steps {
                 script {
                     // Push Docker image to DockerHub
-                    sh "docker login -u sstark300 -p ${DOCKERHUB_PASSWORD}"
+                    withCredentials([usernamePassword(credentialsId: 'sstark300-dockerhub', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
                     sh "docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
                     sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
                     sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
