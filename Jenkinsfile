@@ -43,17 +43,13 @@ node {
            // }
       //  }
     stage('Deploy to Kubernetes') {
-            // Replace placeholder in deployment.yaml with the actual image name
-            sh "sed -i 's,TEST_IMAGE_NAME,tiredpxl/cw02:$BUILD_NUMBER,' kubernetes-deployment.yaml"
-            
-            // Display the updated content of deployment.yaml
-            sh "cat kubernetes-deployment.yaml"
-    
-            // Get pods in the Kubernetes cluster
-            sh "kubectl get pods"
-    
-            // Apply changes in kubernetes-deployment.yaml to the Kubernetes cluster
-            sh "kubectl apply -f kubernetes-deployment.yaml"
+    // Use SSH private key for authentication
+    sshagent(['my-ssh-key']) {
+        // Deploy to Kubernetes using kubectl
+        sh """
+            scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml
+            ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 '/usr/local/bin/kubectl apply -f ~/kubernetes-deployment.yaml'
+        """
         }
-
+    }
 }
