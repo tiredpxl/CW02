@@ -30,16 +30,30 @@ node {
         }
     }
 
-    stage('Deploy to Kubernetes') {
-            steps {
+    //stage('Deploy to Kubernetes') {
+            //steps {
                 // Use SSH private key for authentication
-                withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                //withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                     // Copy Kubernetes deployment YAML file
-                    sh """
-                        scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml
-                        ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/kubernetes-deployment.yaml'
-                    """
-                }
-            }
+                    //sh """
+                        //scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml
+                        //ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/kubernetes-deployment.yaml'
+                    //"""
+               // }
+           // }
+      //  }
+    stage('Deploy to Kubernetes') {
+            // Replace placeholder in deployment.yaml with the actual image name
+            sh "sed -i 's,TEST_IMAGE_NAME,tiredpxl/cw02:$BUILD_NUMBER,' kubernetes-deployment.yaml"
+            
+            // Display the updated content of deployment.yaml
+            sh "cat kubernetes-deployment.yaml"
+    
+            // Get pods in the Kubernetes cluster
+            sh "kubectl get pods"
+    
+            // Apply changes in kubernetes-deployment.yaml to the Kubernetes cluster
+            sh "kubectl apply -f kubernetes-deployment.yaml"
         }
+
 }
