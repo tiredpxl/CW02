@@ -18,7 +18,7 @@ node {
     stage('Run Container') {
         script {
 
-            def containerId = docker.image("sstark/cw02").run("-d -p 8081:8080").id
+            def containerId = docker.image("sstark300/cw02").run("-d -p 8081:8080").id
 
             try {
 
