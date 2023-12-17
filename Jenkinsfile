@@ -53,6 +53,7 @@ pipeline {
                     // Deploy to Kubernetes using kubectl
                     sh "scp -i \$SSH_PRIVATE_KEY ${KUBERNETES_DEPLOYMENT_FILE} ubuntu@ip-172-31-90-21:~/${KUBERNETES_DEPLOYMENT_FILE}"
                     sh "ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/${KUBERNETES_DEPLOYMENT_FILE}'"
+                    }
                 }
             }
         }
