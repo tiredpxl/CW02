@@ -1,41 +1,55 @@
 node {
-    // Your checkout steps go here
-    checkout scm
+    def app
 
-    // Your Docker build steps go here
-    stage('Build Docker Image') {
-        sh 'docker build -t sstark300/cw02:1.0 .'
+    stage('Clone Repository') {
+        checkout scm
     }
 
-    // Your container launch test steps go here
-    stage('Test Container Launch') {
-        sh 'docker run sstark300/cw02:1.0 echo Container launched successfully'
+    stage('Build Image') {
+        app = docker.build("sstark300/cw02")
     }
 
-    // Your DockerHub push steps go here
-    stage('Push to DockerHub') {
-        withCredentials([usernamePassword(credentialsId: 'sstark300-dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-            sh """
-                docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-                docker tag sstark300/cw02:1.0 sstark300/cw02:179
-                docker push sstark300/cw02:1.0
-                docker push sstark300/cw02:179
-            """
+    stage('Test Image') {
+        app.inside {
+            sh 'echo "Test pass"'
         }
     }
 
-    // Deploy to Kubernetes
-    stage('Deploy to Kubernetes') {
-        // Set the PATH variable
-        def PATH = "/usr/local/bin:${env.PATH}"
-        
-        // Use SSH private key for authentication
-        sshagent(['my-ssh-key']) {
-            // Deploy to Kubernetes using kubectl
-            sh """
-                scp -i /var/lib/jenkins/.ssh/id_rsa kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml
-                ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@ip-172-31-90-21 '/usr/local/bin/kubectl apply -f ~/kubernetes-deployment.yaml'
-            """
+    stage('Run Container') {
+        script {
+
+            def containerId = docker.image("sstark/cw02").run("-d -p 8081:8080").id
+
+            try {
+
+                sh 'docker ps'
+                sh"docker exec -i ${containerId} echo 'Success!'"
+            }
+            finally{
+
+                sh "docker stop ${containerId}"
+                sh "docker rm -f --volumes ${containerId}"
+            }
+        }
+    }
+
+    stage('Push Image') {
+        script {
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                def imageTag = "${env.BUILD_NUMBER}"
+                app.push(imageTag)
+                echo "Docker image pushed to sstark300/cw02:${imageTag}"
+            }
+        }
+    }
+    stage('Deploy To Kubernetes') {
+
+        def imageTag = "${env.BUILD_NUMBER}"
+
+        script {
+            withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: "KEY_FILE")]) {
+                sh 'ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@172-31-90-21 "kubectl set image deployments/coursework2 coursework2=sstark300/cw02:' + "${imageTag}" + '"'
+            }
         }
     }
 }
