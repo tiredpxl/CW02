@@ -31,11 +31,15 @@ node {
     }
 
     stage('Deploy to Kubernetes') {
-    // Use SSH private key for authentication
-    sshagent(['my-ssh-key']) {
-        // Deploy to Kubernetes using kubectl
-        sh "scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml"
-        sh "ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/kubernetes-deployment.yaml'"
+            steps {
+                // Use SSH private key for authentication
+                withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                    // Copy Kubernetes deployment YAML file
+                    sh """
+                        scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml
+                        ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/kubernetes-deployment.yaml'
+                    """
+                }
+            }
         }
-    }
 }
