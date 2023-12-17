@@ -48,7 +48,7 @@ node {
 
         script {
             withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: "KEY_FILE")]) {
-                sh 'ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@54.157.197.88 "kubectl set image deployments/coursework2 coursework2=sstark300/cw02:' + "${imageTag}" + '"'
+                sh 'ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@54.157.197.88 "kubectl set image deployments/coursework2 cw02=sstark300/cw02:' + "${imageTag}" + '"'
             }
         }
     }
