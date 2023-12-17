@@ -5,8 +5,9 @@ node {
     stage('Preparation') {
         // Get some code from a GitHub repository
         withCredentials([usernamePassword(credentialsId: 'GitHub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-        // your pipeline steps here
-        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub', url: 'https://github.com/tiredpxl/CW02.git']]])
+            // your pipeline steps here
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub', url: 'https://github.com/tiredpxl/CW02.git']]])
+        }
     }
 
     stage('Build Docker Image') {
@@ -29,14 +30,18 @@ node {
         }
     }
 
-    stage('Deploy to Kubernetes') {
-    // Use SSH private key for authentication
-    withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
-
-        // Deploy to Kubernetes using kubectl
-        sh "ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f kubernetes-deployment.yaml'"
+    stage('Deploy to K8s') {
+        steps {
+            script {
+                // Replace the placeholder in deployment.yaml with the actual image name
+                sh "sed -i 's,TEST_IMAGE_NAME,${dockerImageName}:${BUILD_NUMBER},' kubernetes-deployment.yaml"
+                
+                // Display the updated deployment.yaml file
+                sh "cat kubernetes-deployment.yaml"
+                
+                // Apply the deployment to Kubernetes
+                sh "kubectl apply -f kubernetes-deployment.yaml"
+            }
         }
     }
-
-}
 }
