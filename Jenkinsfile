@@ -31,17 +31,13 @@ node {
     }
 
     stage('Deploy to K8s') {
-        steps {
-            script {
-                // Replace the placeholder in deployment.yaml with the actual image name
-                sh "sed -i 's,TEST_IMAGE_NAME,${dockerImageName}:${BUILD_NUMBER},' kubernetes-deployment.yaml"
-                
-                // Display the updated deployment.yaml file
-                sh "cat kubernetes-deployment.yaml"
-                
-                // Apply the deployment to Kubernetes
-                sh "kubectl apply -f kubernetes-deployment.yaml"
-            }
-        }
+        // Replace the placeholder in deployment.yaml with the actual image name
+        sh "sed -i 's,TEST_IMAGE_NAME,${dockerImageName}:${BUILD_NUMBER},' kubernetes-deployment.yaml"
+        
+        // Display the updated deployment.yaml file
+        sh "cat kubernetes-deployment.yaml"
+        
+        // Apply the deployment to Kubernetes
+        sh "kubectl apply -f kubernetes-deployment.yaml"
     }
 }
