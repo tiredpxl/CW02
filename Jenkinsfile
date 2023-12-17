@@ -45,17 +45,22 @@ pipeline {
                 }
             }
         }
-        }
+    }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                // Use SSH private key for authentication
-                sshagent(['my-ssh-key']) {
-                    // Deploy to Kubernetes using kubectl
-                    sh "scp -i \$SSH_PRIVATE_KEY ${KUBERNETES_DEPLOYMENT_FILE} ubuntu@ip-172-31-90-21:~/${KUBERNETES_DEPLOYMENT_FILE}"
-                    sh "ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/${KUBERNETES_DEPLOYMENT_FILE}'"
-                    }
-                }
-            }
+    // Use SSH private key for authentication
+    sshagent(['my-ssh-key']) {
+        // Deploy to Kubernetes using kubectl
+        script {
+            sh """
+                echo "Copying kubernetes-deployment.yaml to the server"
+                scp -i \$SSH_PRIVATE_KEY kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:~/kubernetes-deployment.yaml || exit 1
+                echo "Applying deployment on the server"
+                ssh -i \$SSH_PRIVATE_KEY ubuntu@ip-172-31-90-21 'kubectl apply -f ~/kubernetes-deployment.yaml' || exit 1
+            """
+        }
+    }
+}
+
         }
     }
