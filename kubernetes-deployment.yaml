@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coursework-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: coursework
+  template:
+    metadata:
+      labels:
+        app: coursework
+    spec:
+      containers:
+      - name: coursework
+        image: sstark300/cw02:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coursework-service
+spec:
+  selector:
+    app: coursework
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
