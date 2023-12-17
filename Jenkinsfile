@@ -33,9 +33,9 @@ node {
     stage('Deploy to Kubernetes') {
     // Use SSH private key for authentication
     withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
-
         // Deploy to Kubernetes using kubectl
-        sh "ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f kubernetes-deployment.yaml'"
+        sh "scp -i \${SSH_PRIVATE_KEY} kubernetes-deployment.yaml ubuntu@ip-172-31-90-21:/tmp/kubernetes-deployment.yaml"
+        sh "ssh -i \${SSH_PRIVATE_KEY} ubuntu@ip-172-31-90-21 'kubectl apply -f /tmp/kubernetes-deployment.yaml'"
         }
     }
 }
